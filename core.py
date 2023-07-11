@@ -1,9 +1,23 @@
 import asyncio
 
-from models import Account, SleepTime
-from scrapers import scrape_members
-from telethon.sync import TelegramClient
+from models import Account , MessageSent , SleepTime
+from telethon.tl.functions.messages import GetDialogsRequest
+from telethon.tl.types import InputPeerEmpty
+from telethon import TelegramClient
 from utils import *
+
+title = """
+     _______   _                                  ____        _   
+    |__   __| | |                                |  _ \      | |  
+       | | ___| | ___  __ _ _ __ __ _ _ __ ___   | |_) | ___ | |_ 
+       | |/ _ \ |/ _ \/ _` | '__/ _` | '_ ` _ \  |  _ < / _ \| __|
+       | |  __/ |  __/ (_| | | | (_| | | | | | | | |_) | (_) | |_ 
+       |_|\___|_|\___|\__, |_|  \__,_|_| |_| |_| |____/ \___/ \__|
+                       __/ |                                      
+                      |___/                                       
+
+"""
+
 
 class Color:
     COLORS = {
@@ -22,9 +36,10 @@ class Color:
         return f"{cls.COLORS[color]}{text}{cls.COLORS['ENDC']}"
 
 def core():
+    print(Color.colorize(title, 'OKGREEN'))
     try:
         accounts = Account.select()
-
+        
         while True:
             action = False
             print(Color.colorize('What do you want to do?', 'HEADER'))
