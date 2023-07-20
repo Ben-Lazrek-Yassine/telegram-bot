@@ -177,6 +177,9 @@ def list_accounts():
         print('No accounts saved.')
     return accounts
 
+RED = '\033[91m'
+# ANSI escape code to reset text color
+RESET = '\033[0m'
 
 def delete_account():
     ids = []
@@ -190,6 +193,14 @@ def delete_account():
         while account_to_delete_id not in ids:
             account_to_delete_id = input('Which account do you want to delete? ')
         account = Account.select().where(Account.id == account_to_delete_id).get()
+
+        # Add a warning message
+        print(RED + 'Are you sure? This action cannot be undone! (Type "yes" to confirm)' + RESET)
+        confirmation = input()
+        if confirmation.lower() != 'yes':
+            print('Deletion aborted.')
+            return
+
         account.delete_instance()
         os.remove(f'{account.phone}.session')
         print(f'Successfully deleted {account.phone}')
@@ -213,7 +224,7 @@ def invite_members():
         choice = None
         while choice not in ['1', '2']:
             print('Which function to execute for member invitation:')
-            print('[1] Add members to all groups')
+            print('[1] Add members to a group')
             print('[2] Add members to a specific channel')
             choice = input('Enter the option number: ')
 

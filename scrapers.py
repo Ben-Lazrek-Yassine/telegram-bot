@@ -6,8 +6,6 @@ from telethon.tl.functions.messages import GetDialogsRequest
 from telethon.tl.types import InputPeerEmpty
 from telethon import TelegramClient
 from utils import *
-from telethon.errors import PeerFloodError, FloodWaitError, UserPrivacyRestrictedError
-
 
 
 def add_members_to_group(client):
