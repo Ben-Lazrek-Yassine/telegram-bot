@@ -6,7 +6,13 @@ import random
 from models import Account, MessageSent, SleepTime
 from telethon.errors.rpcerrorlist import PeerFloodError
 from telethon.sync import TelegramClient
-
+from telethon.tl.types import PeerUser, PeerChat, PeerChannel
+from scrapers import get_all_groups
+from telethon.tl.functions.channels import InviteToChannelRequest
+from telethon.tl.functions.messages import GetDialogsRequest
+from telethon.tl.types import InputPeerChannel
+from scrapers import *
+                
 
 def make_sure_an_account_exists():
     accounts = Account.select()
@@ -116,7 +122,6 @@ def save_credentials():
 
 
 def keep_running():
-    """Keep GUI Window Open when the program reaches the final line"""
     print('Execution ended. You can close this window and re-open it again...')
     while True:
         pass
@@ -192,9 +197,43 @@ def delete_account():
         print('No accounts saved.')
 
 
-def choose_group():
-    from scrapers import scrape_members, scrape_all  # Import here to avoid circular import
+def invite_members():
+    accounts = Account.select()
+    if len(accounts) > 0:
+        print('Available Telegram accounts:')
+        for account in accounts:
+            print(f'[{account.id}] - {account.phone}')
 
+        account_to_use_id = None
+        while account_to_use_id not in [str(account.id) for account in accounts]:
+            account_to_use_id = input('Choose the account to use for member invitation: ')
+
+        selected_account = Account.select().where(Account.id == account_to_use_id).get()
+
+        choice = None
+        while choice not in ['1', '2']:
+            print('Which function to execute for member invitation:')
+            print('[1] Add members to all groups')
+            print('[2] Add members to a specific channel')
+            choice = input('Enter the option number: ')
+
+        client = TelegramClient(selected_account.phone, selected_account.api_id, selected_account.api_hash)
+        client.connect()
+
+        try:
+            if choice == '1':
+                add_members_to_group(client)
+            elif choice == '2':
+                add_members_to_channel(client)
+        except Exception as e:
+            print(f'Error occurred during member invitation: {e}')
+
+        client.disconnect()
+    else:
+        print('No accounts saved. Please add an account first.')
+
+def choose_group():
+    from scrapers import scrape_members, scrape_all 
     accounts = Account.select()
     if len(accounts) > 0:
         ids = []
@@ -220,5 +259,4 @@ def choose_group():
     else:
         print('No account saved. Please add an account first')
 
-    
 
