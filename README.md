@@ -35,7 +35,7 @@ Forward members to another group.
     pip install -r requirements.txt
     ```
 
-3. **Set Up Telegram Accounts:**
+3. **Set Up:**
 
     Configure your Telegram accounts by adding your phone number and wait for otp
 
