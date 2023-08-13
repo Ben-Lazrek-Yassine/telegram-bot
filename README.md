@@ -1,31 +1,56 @@
-# Telegram Bot Toolkit
 ## Features
 
-### Mass Direct Messaging
+[1] Add New Telegram Account:
+Easily add new Telegram accounts to the bot.
 
-Easily send direct messages (DMs) to multiple users using your Telegram accounts. This feature is useful for broadcasting announcements, updates, or promotions to your audience.
+[2] List Telegram Accounts:
+View a list of added Telegram accounts.
 
-### Member Scraping
+[3] Delete Telegram Account:
+Remove unnecessary Telegram accounts.
 
-Scrape members from Telegram groups and channels. Gather a list of users that you can engage with later, helping you expand your network or userbase.
+[4] Select Message Group:
+Choose the group for sending messages.
 
-### Auto Add to Group
+[5] Start Mass DM:
+Initiate mass direct messaging to users.
 
-Automatically add scraped members to your own group. Grow your community effortlessly by inviting users who have shown interest in your content.
+[6] Customize Sleep Time:
+Adjust min/max sleep time per DM for natural interactions.
 
-### Dynamic Sleep Times
+[7] Forward Members:
+Forward members to another group.
 
-Customize the sleep time between sending each DM. This helps simulate a more human-like interaction pattern, preventing bot-like behavior.
+markdown
 
-## Getting Started
 
-1. Clone this repository to your local machine.
+## Installation
 
-```shell
-git clone https://github.com/Ben-Lazrek-Yassine/telegram-bot
-pip install -r requirements.txt
-```
-## Running 
-```shell
-python3 run.py
-```
+1. **Clone the Repository:**
+
+    ```shell
+    git clone https://github.com/your-username/telegram-bot-toolkit.git
+    ```
+
+2. **Install Dependencies:**
+
+    ```shell
+    pip install -r requirements.txt
+    ```
+
+3. **Set Up Telegram Accounts:**
+
+    Configure your Telegram accounts by adding your credentials.
+
+## Running the Bot
+
+1. **Configure Settings:**
+
+    - Select the target group for sending messages.
+    - Set the desired sleep time range for a human-like interaction pattern.
+
+2. **Run the Bot:**
+
+    ```shell
+    python main.py
+    ```
