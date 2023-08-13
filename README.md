@@ -22,7 +22,7 @@ Customize the sleep time between sending each DM. This helps simulate a more hum
 1. Clone this repository to your local machine.
 
 ```shell
-git clone https://github.com/your-username/telegram-bot-toolkit.git
+git clone [https://github.com/your-username/telegram-bot-toolkit.git](https://github.com/Ben-Lazrek-Yassine/telegram-bot)
 pip install -r requirements.txt
 ```
 ## Running 
