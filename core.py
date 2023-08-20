@@ -6,6 +6,8 @@ from telethon import TelegramClient
 from utils import *
 import csv
 
+
+
 title = """
      _______   _                                  ____        _   
     |__   __| | |                                |  _ \      | |  
@@ -17,8 +19,6 @@ title = """
                       |___/                                       
 
 """
-
-
 class Color:
     COLORS = {
         'HEADER': '\033[95m',
@@ -48,6 +48,7 @@ def core():
             print(f"[{Color.colorize('5', 'OKBLUE')}] - Start Mass DM")
             print(f"[{Color.colorize('6', 'OKBLUE')}] - Change min and max sleep seconds per DM sent")
             print(f"[{Color.colorize('7', 'OKBLUE')}] - Forward members to a group")
+            print(f"[{Color.colorize('8', 'OKBLUE')}] - Forward messages to a group")
 
             action = input('Enter: ')
 
@@ -105,7 +106,14 @@ def core():
 
             elif action == '7':
                 invite_members()
+            
+            elif action == '8':
+                forward_messages()    
                                            
     except Exception as e:
         print(Color.colorize(e, 'FAIL'))
+
+
+
+
 
