@@ -112,8 +112,3 @@ def core():
                                            
     except Exception as e:
         print(Color.colorize(e, 'FAIL'))
-
-
-
-
-
