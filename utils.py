@@ -6,88 +6,65 @@ import random
 from models import Account, MessageSent, SleepTime
 from telethon.errors.rpcerrorlist import PeerFloodError
 from telethon.sync import TelegramClient
-from telethon.tl.types import PeerUser, PeerChat, PeerChannel
-from scrapers import get_all_groups
 from telethon.tl.functions.channels import InviteToChannelRequest
 from telethon.tl.functions.messages import GetDialogsRequest
-from telethon.tl.types import InputPeerChannel
-from scrapers import *
-                
+from scrapers import get_joined_groups, scrape_all,add_members_to_group , join_groups_from_file, forward_to_channel
+
+RED = '\033[91m'
+RESET = '\033[0m'   
 
 def make_sure_an_account_exists():
-    accounts = Account.select()
-    if len(accounts) == 0:
+    if not Account.select().count():
         print('No account was found! Please enter a new one')
         save_credentials()
 
-
 def load_message_to_send():
     if not os.path.isfile('message.txt'):
-        with open('message.txt', 'w'):
-            pass
+        open('message.txt', 'w').close()
     with open('message.txt', 'r', encoding='utf-8') as f:
-        message = f.read().strip()
-    return message
-
+        return f.read().strip()
 
 async def send_messages(client, message, usernames, phone=''):
     sleep_obj = SleepTime().select().get()
-
     MIN_SLEEP = sleep_obj.min_sleep_seconds
     MAX_SLEEP = sleep_obj.max_sleep_seconds
 
-    if len(message) > 0:
+    if message:
         for username in usernames:
             query = MessageSent.select().where(
-                MessageSent.username == username,
-                MessageSent.message == message,
+                (MessageSent.username == username) &
+                (MessageSent.message == message)
             )
             if not query.exists():
-                print('Sending Message...')
                 try:
                     await client.send_message(username, message)
-                    message_record = MessageSent(
-                        username=username, message=message
-                    )
+                    message_record = MessageSent(username=username, message=message)
                     message_record.save()
-                    print(
-                        f'Sent message "{message}" to user "{username}" using phone {phone}'
-                    )
+                    print(f'Sent message "{message}" to user "{username}" using phone {phone}')
                     sleep_seconds = random.randint(MIN_SLEEP, MAX_SLEEP)
                     print(f'Waiting {sleep_seconds} seconds for safety')
                     await asyncio.sleep(sleep_seconds)
                 except PeerFloodError:
-                    print(
-                        f'{phone} reached Telegram daily limit! Stopping now'
-                    )
+                    print(f'{phone} reached Telegram daily limit! Stopping now')
                     break
             else:
                 print('Already sent this message. Skipping...')
     else:
         print('You did not define a message to send to users')
-        print(
-            'Please open file message.txt and paste the message you need to be sent'
-        )
-
+        print('Please open file message.txt and paste the message you need to be sent')
 
 def get_usernames():
     if os.path.isfile('members.csv'):
         try:
             with open('members.csv', 'r', encoding='utf-8') as f:
                 csvreader = csv.reader(f)
-                usernames = []
-                for line in csvreader:
-                    if line[0] not in ('username', ''):
-                        usernames.append(line[0])
+                usernames = [line[0] for line in csvreader if line[0] not in ('username', '')]
             return usernames
         except Exception as e:
             print(e)
     else:
-        print(
-            'No group selected. Please select a group to select a message from first'
-        )
+        print('No group selected. Please select a group to select a message from first')
         return []
-
 
 def make_sure_client_authenticates(phone, api_id, api_hash):
     try:
@@ -99,19 +76,14 @@ def make_sure_client_authenticates(phone, api_id, api_hash):
             print(f'Telegram will send a code to {phone}.')
             print(f'Please check if you received a code via SMS or Telegram app')
             client.send_code_request(phone)
-            client.sign_in(
-                phone, input(f'Enter the code that Telegram sent to {phone}: ')
-            )
+            client.sign_in(phone, input(f'Enter the code that Telegram sent to {phone}: '))
         print('OK')
         client.disconnect()
     except Exception as e:
         print(e)
 
-
 def save_credentials():
-    print(
-        'HELP: Visit https://my.telegram.org/ to get the API ID and the API hash for your account'
-    )
+    print('HELP: Visit https://my.telegram.org/ to get the API ID and the API hash for your account')
     phone = input('Enter the account phone number (with country code): ').strip()
     api_id = int(input('Enter the account API ID: ').strip())
     api_hash = input('Enter the account API hash: ').strip()
@@ -119,7 +91,6 @@ def save_credentials():
     account = Account(phone=phone, api_id=api_id, api_hash=api_hash)
     account.save()
     print('Account saved')
-
 
 def keep_running():
     print('Execution ended. You can close this window and re-open it again...')
@@ -178,7 +149,6 @@ def list_accounts():
     return accounts
 
 RED = '\033[91m'
-# ANSI escape code to reset text color
 RESET = '\033[0m'
 
 def delete_account():
@@ -194,7 +164,6 @@ def delete_account():
             account_to_delete_id = input('Which account do you want to delete? ')
         account = Account.select().where(Account.id == account_to_delete_id).get()
 
-        # Add a warning message
         print(RED + 'Are you sure? This action cannot be undone! (Type "yes" to confirm)' + RESET)
         confirmation = input()
         if confirmation.lower() != 'yes':
@@ -235,7 +204,7 @@ def invite_members():
             if choice == '1':
                 add_members_to_group(client)
             elif choice == '2':
-                add_members_to_channel(client)
+                scrape_all(client)
         except Exception as e:
             print(f'Error occurred during member invitation: {e}')
 
@@ -244,7 +213,6 @@ def invite_members():
         print('No accounts saved. Please add an account first.')
 
 def choose_group():
-    from scrapers import scrape_members, scrape_all 
     accounts = Account.select()
     if len(accounts) > 0:
         ids = []
@@ -263,7 +231,7 @@ def choose_group():
         client = TelegramClient(account.phone, account.api_id, account.api_hash)
         client.connect()
         if option == '1':
-            scrape_members(client)
+            get_joined_groups(client)
         elif option == '2':
             scrape_all(client)
         client.disconnect()
@@ -271,3 +239,32 @@ def choose_group():
         print('No account saved. Please add an account first')
 
 
+def forward_messages():
+    accounts = Account.select()
+    if len(accounts) > 0:
+        print('Available Telegram accounts:')
+        for account in accounts:
+            print(f'[{account.id}] - {account.phone}')
+
+        account_to_use_id = None
+        while account_to_use_id not in [str(account.id) for account in accounts]:
+            account_to_use_id = input('Choose the account to use for forwarding: ')
+
+        selected_account = Account.select().where(Account.id == account_to_use_id).get()
+
+        option = None
+        while option not in ['1', '2']:
+            print('Which function to execute for forwarding:')
+            print('[1] Join groups from a file')
+            print('[2] Forward a message')
+            option = input('Enter the option number: ')
+
+        client = TelegramClient(selected_account.phone, selected_account.api_id, selected_account.api_hash)
+        client.connect()
+        if option == '1':
+            join_groups_from_file(client)
+        elif option == '2':
+            forward_to_channel(client)
+        client.disconnect()
+    else:
+        print('No account saved. Please add an account first')
