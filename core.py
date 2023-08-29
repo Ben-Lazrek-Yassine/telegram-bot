@@ -7,7 +7,6 @@ from utils import *
 import csv
 
 
-
 title = """
      _______   _                                  ____        _   
     |__   __| | |                                |  _ \      | |  
@@ -17,7 +16,6 @@ title = """
        |_|\___|_|\___|\__, |_|  \__,_|_| |_| |_| |____/ \___/ \__|
                        __/ |                                      
                       |___/                                       
-
 """
 class Color:
     COLORS = {
@@ -37,6 +35,7 @@ class Color:
 
 def core():
     accounts=Account.select()
+    print((accounts))
     print(Color.colorize(title, 'OKGREEN'))
     try:
         while True:
@@ -49,7 +48,6 @@ def core():
             print(f"[{Color.colorize('6', 'OKBLUE')}] - Change min and max sleep seconds per DM sent")
             print(f"[{Color.colorize('7', 'OKBLUE')}] - Forward members to a group")
             print(f"[{Color.colorize('8', 'OKBLUE')}] - Forward messages to a group")
-
             action = input('Enter: ')
 
             if action == '1':
@@ -65,15 +63,16 @@ def core():
                 choose_group()
 
             elif action == '5':
-                            if len(accounts) > 0:
-                                loop = asyncio.get_event_loop()
-                                tasks = []
-                                for account in accounts:
-                                    tasks.append(loop.create_task(run(account)))
-                                wait_tasks = asyncio.wait(tasks)
-                                loop.run_until_complete(wait_tasks)
-                            else:
-                                print('No accounts found. Please add an account first.')
+                accounts = Account.select()  
+                if accounts:
+                    for account in accounts:
+                        print(f"{account.id}, {account.phone},{account.api_id}, {account.api_hash}")
+                    loop = asyncio.get_event_loop()
+                    tasks = [loop.create_task(run(account)) for account in accounts]
+                    wait_tasks = asyncio.wait(tasks)
+                    loop.run_until_complete(wait_tasks)
+                else:
+                    print('No accounts found. Please add an account first.')
 
             elif action == '6':
                 sleep_obj = SleepTime().select().get()
@@ -112,3 +111,8 @@ def core():
                                            
     except Exception as e:
         print(Color.colorize(e, 'FAIL'))
+
+
+
+
+
