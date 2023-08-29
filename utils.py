@@ -8,7 +8,7 @@ from telethon.errors.rpcerrorlist import PeerFloodError
 from telethon.sync import TelegramClient
 from telethon.tl.functions.channels import InviteToChannelRequest
 from telethon.tl.functions.messages import GetDialogsRequest
-from scrapers import get_joined_groups, scrape_all,add_members_to_group , join_groups_from_file, forward_to_channel
+from scrapers import add_members_to_group, scrape_all,add_members_to_group , join_groups_from_file, forward_to_channel, get_joined_groups
 
 RED = '\033[91m'
 RESET = '\033[0m'   
@@ -191,10 +191,9 @@ def invite_members():
         selected_account = Account.select().where(Account.id == account_to_use_id).get()
 
         choice = None
-        while choice not in ['1', '2']:
+        while choice not in ['1']:
             print('Which function to execute for member invitation:')
             print('[1] Add members to a group')
-            print('[2] Add members to a specific channel')
             choice = input('Enter the option number: ')
 
         client = TelegramClient(selected_account.phone, selected_account.api_id, selected_account.api_hash)
@@ -203,8 +202,6 @@ def invite_members():
         try:
             if choice == '1':
                 add_members_to_group(client)
-            elif choice == '2':
-                scrape_all(client)
         except Exception as e:
             print(f'Error occurred during member invitation: {e}')
 
@@ -227,8 +224,8 @@ def choose_group():
         print(f'Logged in with {account.phone}')
         option = None
         while option not in ('1', '2'):
-            option = input('Do you want to:\n[1] Select a specific group\n[2] Scrape all groups\nEnter the option number: ')
-        client = TelegramClient(account.phone, account.api_id, account.api_hash)
+            option = input('Do you want to:\n[1] Select a specific group\n[2] all groups\nEnter the option number: ')
+        client = TelegramClient(account.phone, account.api_id, account.api_hash) 
         client.connect()
         if option == '1':
             get_joined_groups(client)
