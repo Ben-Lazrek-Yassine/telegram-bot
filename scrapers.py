@@ -8,7 +8,7 @@ from models import Account, MessageSent, SleepTime
 from telethon.tl.functions.channels import InviteToChannelRequest, JoinChannelRequest
 from telethon.tl.functions.messages import GetDialogsRequest
 from telethon.tl.types import InputPeerEmpty
-
+from telethon.errors import PhoneNumberBannedError
 
 def add_members_to_group(client):
     groups = get_all_groups(client)
@@ -53,7 +53,6 @@ def get_all_groups(client):
         last_date = None
         chunk_size = 200
         groups = []
-
         result = client(GetDialogsRequest(offset_date=last_date, offset_id=0, offset_peer=InputPeerEmpty(), limit=chunk_size, hash=0))
         chats.extend(result.chats)
 
@@ -119,6 +118,7 @@ def get_joined_groups(client):
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
+
 def scrape_members_from_group(client, target_group):
     print(f'Fetching members from group: {target_group.title}')
     all_participants = client.get_participants(target_group)
@@ -138,7 +138,19 @@ def scrape_members_from_group(client, target_group):
         for user in all_participants:
             username = user.username if user.username else ''
             name = f"{user.first_name or ''} {user.last_name or ''}".strip()
-            writer.writerow([username, user.id, user.access_hash, name, target_group.title, target_group.id])
+            user_id = user.id
+            access_hash = user.access_hash
+            
+            try:
+                # Check if the user is banned using the 'User' object
+                if user.min:
+                    print(f"User {username} is banned. Skipping...")
+                    continue
+            except Exception as e:
+                print(f"Error occurred while fetching user {username}: {e}")
+                continue
+            
+            writer.writerow([username, user_id, access_hash, name, target_group.title, target_group.id])
     print('Members scraped successfully.')
 
 
@@ -153,10 +165,27 @@ def save_credentials():
     
 
 def get_joined_groups(client):
-    entity = client.get_entity('me')
-    return [dialog.entity for dialog in client.iter_dialogs() if dialog.entity.megagroup]
+    groups = get_all_groups(client)
 
-#### testing
+    if not groups:
+        print("No groups found.")
+        return
+
+    print('Choose a group to scrape members from:')
+    for i, group in enumerate(groups):
+        print(f"{i}- {group.title}")
+
+    try:
+        group_index = int(input('Enter a number: '))
+        if group_index < 0 or group_index >= len(groups):
+            print('Invalid group number.')
+            return
+
+        target_group = groups[group_index]
+        scrape_members_from_group(client, target_group)
+    except ValueError:
+        print("Invalid input. Please enter a valid number.")
+
 def forward_to_channel(client):
     source_channel_id = input('Enter the source channel ID: ')
     message_id = input('Enter the message ID to forward: ')
